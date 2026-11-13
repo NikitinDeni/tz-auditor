@@ -14,6 +14,7 @@ from docx.text.paragraph import Paragraph
 from lxml.etree import XMLSyntaxError
 
 from tz_auditor.domain.documents import DocumentBlock, ParsedDocument, SourceLocator
+from tz_auditor.parsing.docx_tables import iter_table_cells
 
 
 class DocxParseError(ValueError):
@@ -21,10 +22,10 @@ class DocxParseError(ValueError):
 
 
 def parse_docx(path: Path) -> ParsedDocument:
-    """Extract top-level paragraphs and ordinary table cells in source order.
+    """Extract top-level paragraphs and physical table cells in source order.
 
     Paragraph/table counters are independent and include empty source elements.
-    Merged or irregular tables are skipped with an explicit warning.
+    Merged-cell text is emitted once; irregular structures produce diagnostics.
     """
     try:
         return _parse_docx(path)
@@ -94,30 +95,8 @@ def _parse_docx(path: Path) -> ParsedDocument:
             paragraph_index += 1
         elif element.tag == qn("w:tbl"):
             table = Table(element, document)
-            # Avoid python-docx's aliases for merged cells: never invent source coordinates.
-            irregular_tags = {
-                qn(f"w:{name}")
-                for name in ("gridSpan", "vMerge", "hMerge", "gridBefore", "gridAfter")
-            }
-            properties = element.xpath("./w:tr/w:tc/w:tcPr/* | ./w:tr/w:trPr/*")
-            irregular = any(node.tag in irregular_tags for node in properties)
-            expected_columns = len(element.tblGrid.gridCol_lst)
-            irregular |= any(len(row.tc_lst) != expected_columns for row in element.tr_lst)
-            if irregular:
-                warn(f"Таблица {table_index}: объединённые или неполные ячейки; таблица пропущена.")
-            else:
-                for row_index, row in enumerate(table.rows):
-                    for column_index, cell in enumerate(row.cells):
-                        if cell.tables:
-                            warn(f"Таблица {table_index}: вложенные таблицы не извлекаются.")
-                        append(
-                            "\n".join(paragraph.text for paragraph in cell.paragraphs),
-                            SourceLocator(
-                                table_index=table_index,
-                                row_index=row_index,
-                                column_index=column_index,
-                            ),
-                        )
+            for text, locator in iter_table_cells(table, table_index, warn):
+                append(text, locator)
             table_index += 1
         elif element.tag != qn("w:sectPr"):
             warn("Неподдерживаемый элемент основного тела документа пропущен.")

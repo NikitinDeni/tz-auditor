@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from docx import Document
 
 from tz_auditor.domain.documents import ParsedDocument
 from tz_auditor.parsing.docx_parser import parse_docx
@@ -71,3 +72,25 @@ def test_generator_values_and_original_coordinates(synthetic_dir: Path) -> None:
     assert "2000" in [b.text for b in normal.blocks]
     assert [b.locator for b in normal.blocks] == [b.locator for b in conflict.blocks]
     assert all(b.kind in {"paragraph", "table_cell"} for b in conflict.blocks)
+
+
+def test_cli_complex_table_keeps_text_and_reports_provenance(tmp_path: Path) -> None:
+    document = Document()
+    document.add_heading("Характеристики", 1)
+    table = document.add_table(rows=2, cols=3)
+    table.cell(0, 0).text = "Стеллаж ±2 мм"
+    table.cell(0, 0).merge(table.cell(1, 1))
+    table.cell(0, 2).text = "2000"
+    table.cell(1, 2).text = "2200"
+    path = tmp_path / "complex.docx"
+    output = tmp_path / "complex.json"
+    document.save(path)
+    process = run_cli("parse", str(path), "--output", str(output))
+    assert process.returncode == 0, process.stderr
+    parsed = ParsedDocument.model_validate_json(output.read_text(encoding="utf-8"))
+    assert parsed == parse_docx(path)
+    assert [b.text for b in parsed.blocks] == ["Характеристики", "Стеллаж ±2 мм", "2000", "2200"]
+    assert parsed.blocks[-1].locator.column_index == 1
+    assert all(b.section_path == ["Характеристики"] for b in parsed.blocks)
+    assert "Предупреждение:" in process.stderr
+    assert "vMerge" in process.stderr

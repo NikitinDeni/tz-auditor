@@ -176,8 +176,10 @@ def test_table_without_grid(tmp_path: Path) -> None:
     table._tbl.remove(table._tbl.tblGrid)
     path = tmp_path / "no_grid.docx"
     document.save(path)
-    with pytest.raises(DocxParseError, match="структура"):
-        parse_docx(path)
+    result = parse_docx(path)
+    assert [block.text for block in result.blocks] == [""]
+    assert result.blocks[0].locator.column_index == 0
+    assert "сетка отсутствует" in result.warnings[0]
 
 
 @pytest.mark.parametrize("vertical", [False, True])
@@ -191,9 +193,9 @@ def test_merged_tables_warn_and_preserve_subsequent_indices(tmp_path: Path, vert
     path = tmp_path / "merged.docx"
     document.save(path)
     parsed = parse_docx(path)
-    assert [b.text for b in parsed.blocks] == ["Начало", "После", "Обычная"]
-    assert parsed.blocks[1].locator.paragraph_index == 1
-    assert parsed.blocks[2].locator.table_index == 1
+    assert [b.text for b in parsed.blocks] == ["Начало", "", "", "", "После", "Обычная"]
+    assert parsed.blocks[-2].locator.paragraph_index == 1
+    assert parsed.blocks[-1].locator.table_index == 1
     assert "Таблица 0" in parsed.warnings[0]
 
 
@@ -224,7 +226,7 @@ def test_unsupported_content_is_explicit(tmp_path: Path) -> None:
     assert parsed.blocks[-1].locator.paragraph_index == 0
 
 
-def test_incomplete_table_is_skipped(tmp_path: Path) -> None:
+def test_incomplete_table_preserves_available_cells(tmp_path: Path) -> None:
     document = Document()
     table = document.add_table(rows=1, cols=2)
     row = table._tbl.tr_lst[0]
@@ -232,7 +234,8 @@ def test_incomplete_table_is_skipped(tmp_path: Path) -> None:
     path = tmp_path / "incomplete.docx"
     document.save(path)
     result = parse_docx(path)
-    assert result.blocks == []
+    assert [block.text for block in result.blocks] == [""]
+    assert result.blocks[0].locator.row_index == result.blocks[0].locator.column_index == 0
     assert result.warnings
 
 

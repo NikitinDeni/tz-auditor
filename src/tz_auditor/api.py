@@ -114,19 +114,4 @@ async def http_error(request, exc):
 
 @app.get("/", response_class=HTMLResponse)
 def index():
-    return """<!doctype html><html lang="ru"><meta charset="utf-8">
-<title>TZ-Auditor</title><body><h1>TZ-Auditor</h1>
-<p>Локальная проверка числовых противоречий. DOCX, до 10 МиБ.
-Нормативная проверка не выполняется.</p>
-<form id="audit"><input type="file" name="file" accept=".docx" required>
-<button>Проверить</button></form><pre id="result" aria-live="polite"></pre>
-<script>
-document.getElementById('audit').onsubmit = async function(event) {
- event.preventDefault(); const output = document.getElementById('result');
- const button = this.querySelector('button'); button.disabled = true;
- output.textContent = 'Проверка…';
- try { const response = await fetch('/audit', {method:'POST', body:new FormData(this)});
- output.textContent = JSON.stringify(await response.json(), null, 2);
- } catch(error) { output.textContent = 'Ошибка соединения с сервисом'; }
- finally { button.disabled = false; }
-};</script></body></html>"""
+    return (Path(__file__).parent / "web" / "index.html").read_text(encoding="utf-8")

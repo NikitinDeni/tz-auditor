@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>TZ-Auditor — анализ технического задания</title>
+<style>
+:root{--bg:#0b0c0e;--panel:#121416;--line:#2b2d31;--text:#f0efec;--muted:#a7a8ad;--red:#ff3d49;--soft:#ffb5b9;--amber:#efc57e;--mono:ui-monospace,SFMono-Regular,Consolas,monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}button,input{font:inherit}button,label,summary{-webkit-tap-highlight-color:transparent}button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid var(--soft);outline-offset:5px}[hidden]{display:none!important}::selection{background:#9c1d2c;color:white}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}button:hover:not(:disabled){filter:brightness(1.15)}
+.topbar{border-bottom:1px solid var(--line);height:78px;display:flex;align-items:center;justify-content:space-between;padding:0 5vw}.brand{display:flex;align-items:center;gap:13px;font-weight:800;font-size:19px;letter-spacing:-.7px}.mark{display:grid;place-items:center;width:33px;height:33px;background:var(--red);color:#100b0c;font:900 20px var(--mono);clip-path:polygon(0 0,75% 0,100% 25%,100% 100%,25% 100%,0 75%)}.topnote{color:var(--muted);font:11px var(--mono);letter-spacing:1.5px}.topnote b{color:var(--red);margin-right:9px}.shell{max-width:1440px;margin:auto;padding:48px 5vw 28px}.eyebrow{color:var(--red);font:11px var(--mono);letter-spacing:2px;text-transform:uppercase}.hero{display:flex;justify-content:space-between;gap:30px;margin-bottom:36px}.hero h1{font-size:clamp(28px,3.2vw,46px);line-height:1.15;letter-spacing:-1.8px;margin:14px 0}.hero p{color:var(--muted);max-width:660px;margin:0}.hero-code{font:11px var(--mono);color:#74777e;text-align:right;align-self:end;line-height:1.9;white-space:nowrap}.workspace{display:grid;grid-template-columns:310px minmax(0,1fr);gap:28px;align-items:start}.panel{background:var(--panel);border:1px solid var(--line)}.upload-panel{padding:24px;position:sticky;top:24px;border-top:2px solid var(--red)}.section-heading{font-size:16px;font-weight:650;margin:0 0 20px;display:flex;gap:12px;align-items:center}.step{font:11px var(--mono);color:var(--red)}.filebox{position:relative;border:1px dashed #55565c;background:#181a1e;min-height:172px;padding:25px 14px;text-align:center;cursor:pointer;display:block}.filebox:focus-within{outline:3px solid var(--soft);outline-offset:3px}.filebox:hover{border-color:var(--red)}.filebox input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}.upload-symbol{display:block;color:var(--red);font:32px var(--mono);margin-bottom:10px}.filebox strong{display:block;font-size:14px}.filebox small{color:var(--muted);font-size:12px}.selected{font:12px/1.6 var(--mono);color:var(--muted);overflow-wrap:anywhere;margin:15px 0 20px;min-height:20px}.primary{width:100%;border:0;background:var(--red);color:#100c0d;font-weight:750;padding:13px 10px;display:flex;justify-content:space-between;gap:10px;align-items:center}.side-note{font-size:12px;color:var(--muted);margin:20px 0 0}.side-note strong{color:var(--text);font-weight:500}.method{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}.method p{font-size:12px;color:var(--muted);margin:7px 0}.method-title{font:10px var(--mono);letter-spacing:1.4px;color:var(--muted)}.output{min-width:0}.output-bar{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:0 0 14px;gap:14px}.output-bar h2{font-size:16px;font-weight:600;margin:0}.state-label{font:10px var(--mono);text-transform:uppercase;letter-spacing:1px;color:var(--muted)}.placeholder{min-height:355px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:38px;border:1px solid var(--line);margin-top:20px;background:linear-gradient(125deg,#171719,#101113)}.target{width:75px;height:75px;border:1px solid #4b2a30;display:grid;place-items:center;color:var(--red);font:32px var(--mono);margin-bottom:20px;position:relative}.target:before,.target:after{content:"";position:absolute;background:var(--red);height:2px;width:15px}.target:before{top:-1px;left:-1px}.target:after{bottom:-1px;right:-1px}.placeholder h3{margin:0 0 10px;font-size:20px;letter-spacing:-.4px}.placeholder p{color:var(--muted);max-width:440px;margin:0;font-size:14px}.loading .target{animation:pulse 1.2s ease-in-out infinite}.error{border-color:#8d303b;background:#211316;min-height:260px}.error h3{color:var(--soft)}@keyframes pulse{50%{opacity:.3}}@media(prefers-reduced-motion:reduce){.loading .target{animation:none}}
+.summary{margin-top:20px;padding:22px 24px}.document-label{font:10px var(--mono);letter-spacing:1.5px;color:var(--muted)}.filename{font-size:20px;font-weight:650;overflow-wrap:anywhere;letter-spacing:-.4px;margin:6px 0 20px}.stats{display:grid;grid-template-columns:90px 1fr 1.3fr;gap:20px;border-top:1px solid var(--line);padding-top:18px}.stats span{display:block;font-size:11px;color:var(--muted)}.stats strong{font-size:13px;font-weight:500;display:block;margin-top:4px}.stats .count{font:32px/1.2 var(--mono);color:var(--red);margin:0 0 6px}.finding{margin-top:18px;border:1px solid var(--line);background:var(--panel);border-left:3px solid var(--red);padding:22px 24px}.finding.review{border-left-color:var(--amber)}.card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.finding-number{font:10px var(--mono);letter-spacing:1px;color:var(--muted)}.badge{display:inline-block;border:1px solid #74323c;background:#321a20;color:var(--soft);font:11px var(--mono);padding:4px 9px}.review .badge{border-color:#695333;background:#29231b;color:var(--amber)}.finding h3{font-size:18px;line-height:1.4;margin:15px 0 9px;letter-spacing:-.4px}.explanation{margin:0 0 22px;overflow-wrap:anywhere;color:#d1d0d4;font-size:14px}.microtitle{font:10px var(--mono);letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin:0 0 10px}.evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.evidence{background:#0d0e10;border:1px solid #292b30;padding:14px;min-width:0}.evidence blockquote{margin:8px 0 12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}.source-id{color:var(--red);font:10px var(--mono)}.coords{color:var(--muted);font:10px/1.8 var(--mono);overflow-wrap:anywhere}.coord-note{font-size:11px;color:var(--muted);margin:10px 0 0}.recommendation{border-top:1px solid var(--line);margin-top:20px;padding-top:16px}.recommendation p{font-size:13px;margin:6px 0 0;overflow-wrap:anywhere}.empty-result{padding:28px 24px;border:1px solid #44464c;margin-top:18px;background:var(--panel)}.empty-result h3{font-size:19px;line-height:1.5;margin:0 0 10px}.empty-result p{font-size:13px;color:var(--muted);margin:0}.technical{border:1px solid var(--line);margin-top:20px;padding:0 20px}.technical summary{padding:16px 0;cursor:pointer;font-size:13px;color:#c5c5ca}.technical-content{border-top:1px solid var(--line);padding:18px 0;font-size:12px;color:var(--muted);overflow-wrap:anywhere}.technical h3{font-size:12px;color:var(--text);margin:20px 0 6px}.technical h3:first-child{margin-top:0}.technical ul{padding-left:20px}.technical code{font:11px/1.8 var(--mono)}pre{max-height:340px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.7 var(--mono);padding:15px;background:#08090a;border:1px solid var(--line)}footer{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:44px;padding-top:18px;color:#92949a;font:10px/1.8 var(--mono)}footer span:first-child{letter-spacing:1px}a{color:var(--soft)}
+@media(max-width:850px){.workspace{grid-template-columns:1fr}.upload-panel{position:static}.filebox{min-height:120px;padding:16px}.hero-code{display:none}.shell{padding:30px 5vw}.hero{margin-bottom:25px}.topbar{height:65px}.placeholder{min-height:280px}}@media(max-width:480px){.topnote{font-size:9px;letter-spacing:0}.brand{font-size:16px}.hero h1{letter-spacing:-1px}.stats{grid-template-columns:65px 1fr;gap:15px}.stats div:last-child{grid-column:1/-1}.evidence-grid{grid-template-columns:1fr}.summary,.finding{padding:18px}.state-label{font-size:9px}.placeholder{padding:25px 18px}.upload-panel{padding:20px}.technical{padding:0 16px}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true">T</span>TZ-AUDITOR</div><span class="topnote"><b>●</b>DOCUMENT ANALYSIS / MVP</span></header>
+<main class="shell">
+<section class="hero"><div><span class="eyebrow">Проверка технических заданий</span><h1>Точность начинается<br>с согласованных требований.</h1><p>Находите числовые противоречия в DOCX и проверяйте их по исходным фрагментам документа.</p></div><div class="hero-code" aria-hidden="true">SPECIFICATION AUDIT<br>RULE-BASED / 01</div></section>
+<div class="workspace">
+<aside class="panel upload-panel"><h2 class="section-heading"><span class="step">01</span>Документ для проверки</h2>
+<form id="audit"><label class="filebox"><input id="file" type="file" name="file" accept=".docx" required aria-label="Выбрать документ DOCX" aria-describedby="file-help selected"><span class="upload-symbol" aria-hidden="true">↥</span><strong>Выберите DOCX</strong><small id="file-help">Нажмите для выбора · до 10 МиБ</small></label><p class="selected" id="selected">Файл ещё не выбран</p><button class="primary" id="submit" type="submit" disabled><span id="button-text">Проверить документ</span><span aria-hidden="true">↗</span></button></form>
+<p class="side-note"><strong>Для демо — только синтетические документы.</strong><br>Не загружайте реальные и конфиденциальные ТЗ.</p>
+<div class="method"><span class="method-title">ТИП ПРОВЕРКИ</span><p>Числовые противоречия</p><p>Точные размеры и масса. Нормативная проверка, включая 223-ФЗ, не выполняется.</p></div></aside>
+<section class="output" aria-label="Результаты анализа" aria-busy="false" id="output"><div class="output-bar"><h2><span class="step">02</span> Результаты анализа</h2><span class="state-label" id="state" role="status" aria-live="polite">Ожидание документа</span></div>
+<div class="placeholder" id="placeholder"><div class="target" aria-hidden="true">⌖</div><h3 id="placeholder-title">Готов к проверке</h3><p id="placeholder-text">Выберите документ слева. Здесь появятся замечания, исходные фрагменты и рекомендации.</p></div>
+<div id="results" hidden></div>
+</section></div>
+<footer><span>TZ-AUDITOR / HACKATHON MVP</span><span>Результат ограничен реализованными проверками. Решение принимает специалист.</span></footer>
+</main>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const fileInput = $('file'), submit = $('submit'), results = $('results');
+const MAX_UPLOAD = 10 * 1024 * 1024;
+const categories = {numeric_contradiction:'Числовое противоречие'};
+const statuses = {confirmed:'Подтверждено', needs_review:'Требует проверки'};
+function node(tag, className, text) { const el = document.createElement(tag); if(className) el.className = className; if(text !== undefined) el.textContent = String(text); return el; }
+function placeholder(title, message, mode='') {
+  results.replaceChildren(); results.hidden = true;
+  $('placeholder').hidden = false; $('placeholder').className = 'placeholder ' + mode;
+  $('placeholder-title').textContent = title; $('placeholder-text').textContent = message;
+  $('placeholder').setAttribute('role', mode === 'error' ? 'alert' : 'group');
+}
+function error(message) { placeholder('Не удалось выполнить проверку', message, 'error'); $('state').textContent = 'Ошибка проверки'; }
+function validate(file) {
+  if(!file) return 'Выберите DOCX для проверки.';
+  if(!/\.docx$/i.test(file.name)) return 'Поддерживается только формат DOCX.';
+  if(file.size > MAX_UPLOAD) return 'Файл больше 10 МиБ. Выберите документ меньшего размера.';
+  if(file.size === 0) return 'Файл пуст. Выберите документ с содержимым.';
+  return null;
+}
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0], issue = validate(file);
+  $('selected').textContent = file ? `${file.name} · ${(file.size/1024/1024).toFixed(2)} МиБ` : 'Файл ещё не выбран';
+  submit.disabled = !!issue;
+  if(file && issue) error(issue);
+  else { placeholder('Готов к проверке', file ? 'Документ выбран. Нажмите «Проверить документ».' : 'Выберите документ. Здесь появятся результаты анализа.'); $('state').textContent = file ? 'Документ выбран' : 'Ожидание документа'; }
+});
+function addList(parent, title, values, fallback) {
+  parent.append(node('h3','',title));
+  if(!values.length) { parent.append(node('p','',fallback)); return; }
+  const list = node('ul'); values.forEach(text => list.append(node('li','',text))); parent.append(list);
+}
+function render(data) {
+  if(!data || typeof data.filename !== 'string' || typeof data.document_id !== 'string' || !Array.isArray(data.findings) || !Array.isArray(data.warnings) || !Array.isArray(data.limitations) || data.findings.some(f => !f || !Array.isArray(f.evidence) || f.evidence.some(e => !e || !e.locator))) throw new Error('Сервис вернул неожиданный формат ответа. Повторите проверку.');
+  const fragment = document.createDocumentFragment();
+  const summary = node('section','panel summary');
+  summary.append(node('span','document-label','ПРОВЕРЕННЫЙ ДОКУМЕНТ'),node('h3','filename',data.filename));
+  const stats = node('div','stats'), count = node('div');
+  count.append(node('strong','count',data.findings.length),node('span','','Замечаний'));
+  const state = node('div'); state.append(node('span','','Статус анализа'),node('strong','','Завершён'));
+  const type = node('div'); type.append(node('span','','Тип проверки'),node('strong','','Числовые противоречия'));
+  stats.append(count,state,type); summary.append(stats); fragment.append(summary);
+  if(!data.findings.length) {
+    const empty = node('section','empty-result');
+    empty.append(node('h3','','В рамках реализованных проверок противоречия не обнаружены'),node('p','','Это не подтверждает полное соответствие документа требованиям. Область проверки и ограничения указаны в технических сведениях.')); fragment.append(empty);
+  }
+  data.findings.forEach((finding,index) => {
+    const card = node('article','finding' + (finding.status === 'needs_review' ? ' review' : ''));
+    const top = node('div','card-top'); top.append(node('span','finding-number',`ЗАМЕЧАНИЕ / ${String(index+1).padStart(2,'0')}`),node('span','badge',statuses[finding.status] || finding.status));
+    card.append(top,node('h3','',categories[finding.category] || finding.category),node('p','explanation',finding.explanation),node('h4','microtitle','Значения и исходные фрагменты'));
+    const evidence = node('div','evidence-grid');
+    finding.evidence.forEach(source => {
+      const box = node('section','evidence'), loc = source.locator;
+      box.append(node('span','source-id',source.block_id),node('blockquote','',source.text));
+      const address = loc.paragraph_index !== null && loc.paragraph_index !== undefined ? `Абзац: ${loc.paragraph_index}` : `Таблица: ${loc.table_index} · строка: ${loc.row_index} · ячейка: ${loc.column_index}`;
+      box.append(node('div','coords',address),node('div','coords',`Символы: [${source.start}, ${source.end})`)); evidence.append(box);
+    });
+    if(!finding.evidence.length) evidence.append(node('p','coord-note','Исходные фрагменты не предоставлены сервисом.'));
+    card.append(evidence,node('p','coord-note','Координаты исходного документа: индексы с нуля; конец диапазона символов не включён.'));
+    const recommendation = node('div','recommendation'); recommendation.append(node('h4','microtitle','Рекомендация'),node('p','',finding.recommendation)); card.append(recommendation); fragment.append(card);
+  });
+  const details = node('details','technical'); details.append(node('summary','','Технические сведения'));
+  const technical = node('div','technical-content');
+  addList(technical,'Предупреждения парсера',data.warnings,'Парсер не вернул предупреждений.');
+  technical.append(node('h3','','SHA-256 документа'),node('code','',data.document_id));
+  addList(technical,'Технические ограничения',data.limitations,'Ограничения не предоставлены сервисом.');
+  technical.append(node('h3','','Исходный JSON'),node('pre','',JSON.stringify(data,null,2)));
+  details.append(technical); fragment.append(details);
+  results.replaceChildren(fragment); results.hidden = false; $('placeholder').hidden = true;
+  $('state').textContent = `Анализ завершён · замечаний: ${data.findings.length}`;
+}
+$('audit').addEventListener('submit', async event => {
+  event.preventDefault();
+  const file = fileInput.files[0], issue = validate(file);
+  if(issue) { error(issue); return; }
+  submit.disabled = true; fileInput.disabled = true; $('output').setAttribute('aria-busy','true');
+  $('button-text').textContent = 'Проверяем…'; $('state').textContent = 'Анализ документа';
+  placeholder('Анализируем документ', 'Извлекаем абзацы и таблицы, проверяем числовые характеристики. Это может занять некоторое время.', 'loading');
+  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 90000);
+  try {
+    const form = new FormData(); form.append('file',file);
+    const response = await fetch('/audit',{method:'POST',body:form,signal:controller.signal});
+    let data; try { data = await response.json(); } catch { throw new Error('Сервис вернул нечитаемый ответ. Повторите проверку позже.'); }
+    if(!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `Ошибка сервиса (${response.status}). Повторите проверку.`);
+    render(data);
+  } catch(err) {
+    error(err.name === 'AbortError' ? 'Время ожидания истекло. Сервис может запускаться после простоя. Попробуйте ещё раз.' : err instanceof TypeError ? 'Нет соединения с сервисом. Проверьте сеть и попробуйте ещё раз.' : err.message || 'Не удалось обработать документ.');
+  } finally {
+    clearTimeout(timer); fileInput.disabled = false; submit.disabled = false;
+    $('button-text').textContent = 'Проверить документ'; $('output').setAttribute('aria-busy','false');
+  }
+});
+</script>
+</body>
+</html>

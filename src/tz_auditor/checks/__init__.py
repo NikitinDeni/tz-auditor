@@ -20,9 +20,15 @@ class Evidence(BaseModel):
 
 
 class Finding(BaseModel):
-    category: Literal["numeric_contradiction", "categorical_contradiction"] = (
-        "numeric_contradiction"
-    )
+    category: Literal[
+        "numeric_contradiction",
+        "categorical_contradiction",
+        "ambiguous_performance_deadline",
+        "incomplete_bundle_specification",
+        "heterogeneous_bundle_review",
+        "non_verifiable_requirement",
+        "acceptance_dependency_review",
+    ] = "numeric_contradiction"
     status: Literal["confirmed", "needs_review"]
     explanation: str
     evidence: list[Evidence]
@@ -131,26 +137,37 @@ def check_numeric(document: ParsedDocument) -> list[Finding]:
             facts[(scope, section, identity, attribute, unit, status)].append((number, evidence))
     findings = []
     for (_, _, identity, attribute, unit, status), entries in facts.items():
+        grouped = None
         for (left, evidence_left), (right, evidence_right) in combinations(entries, 2):
             if left == right:
                 continue
             evidence = {e.block_id: e for e in evidence_left + evidence_right}
-            findings.append(
-                Finding(
-                    status=status,
-                    explanation=(
-                        f"{identity}: {attribute} — {left.normalize():f} {unit} и "
-                        f"{right.normalize():f} {unit}. "
-                        + (
-                            "Указаны разные точные значения."
-                            if status == "confirmed"
-                            else "Требуется подтвердить принадлежность одному объекту."
-                        )
-                    ),
-                    evidence=list(evidence.values()),
-                    recommendation="Уточнить объект и согласовать единое значение характеристики.",
-                )
+            finding = Finding(
+                status=status,
+                explanation=(
+                    f"{identity}: {attribute} — {left.normalize():f} {unit} и "
+                    f"{right.normalize():f} {unit}. "
+                    + (
+                        "Указаны разные точные значения."
+                        if status == "confirmed"
+                        else "Требуется подтвердить принадлежность одному объекту."
+                    )
+                ),
+                evidence=list(evidence.values()),
+                recommendation="Уточнить объект и согласовать единое значение характеристики.",
             )
+            if grouped is None:
+                grouped = finding
+                findings.append(grouped)
+            else:
+                grouped.evidence = list(
+                    {e.block_id: e for e in grouped.evidence + finding.evidence}.values()
+                )
+                if finding.explanation not in grouped.explanation:
+                    grouped.explanation += " " + finding.explanation
     from tz_auditor.checks.lifts import check_lifts
+    from tz_auditor.checks.quality import check_quality
 
-    return findings + check_lifts(document, _rows(document))
+    return (
+        findings + check_lifts(document, _rows(document)) + check_quality(document, _rows(document))
+    )

@@ -163,6 +163,7 @@ def check_lifts(document: ParsedDocument, rows):
 
     facts = extract_lift_requirements(document, rows)
     findings = []
+    grouped = {}
     for left, right in combinations(facts, 2):
         if left.attribute != right.attribute or left.value == right.value:
             continue
@@ -172,34 +173,41 @@ def check_lifts(document: ParsedDocument, rows):
             continue
         confirmed = left.certain and right.certain and left.identity == right.identity
         sources = {b.block_id: b for b in left.blocks + right.blocks if b.text}
-        findings.append(
-            Finding(
-                category="categorical_contradiction"
-                if left.attribute == "тип лифта"
-                else "numeric_contradiction",
-                status="confirmed" if confirmed else "needs_review",
-                explanation=(
-                    f"{left.attribute}: {left.value} {left.unit} / "
-                    f"{right.value} {right.unit}. "
-                    + (
-                        f"Один объект: {left.identity}; значения несовместимы."
-                        if confirmed
-                        else "Принадлежность одному лифту не доказана; требуется проверка объекта."
-                    )
-                ),
-                evidence=[
-                    Evidence(
-                        block_id=b.block_id,
-                        locator=b.locator,
-                        text=b.text,
-                        start=0,
-                        end=len(b.text),
-                    )
-                    for b in sources.values()
-                ],
-                recommendation=(
-                    f"Уточнить принадлежность требований и согласовать {left.attribute}."
-                ),
-            )
+        finding = Finding(
+            category="categorical_contradiction"
+            if left.attribute == "тип лифта"
+            else "numeric_contradiction",
+            status="confirmed" if confirmed else "needs_review",
+            explanation=(
+                f"{left.attribute}: {left.value} {left.unit} / "
+                f"{right.value} {right.unit}. "
+                + (
+                    f"Один объект: {left.identity}; значения несовместимы."
+                    if confirmed
+                    else "Принадлежность одному лифту не доказана; требуется проверка объекта."
+                )
+            ),
+            evidence=[
+                Evidence(
+                    block_id=b.block_id,
+                    locator=b.locator,
+                    text=b.text,
+                    start=0,
+                    end=len(b.text),
+                )
+                for b in sources.values()
+            ],
+            recommendation=(f"Уточнить принадлежность требований и согласовать {left.attribute}."),
         )
+        key = (left.attribute, tuple(sorted((left.identity, right.identity))), confirmed)
+        if key not in grouped:
+            grouped[key] = finding
+            findings.append(finding)
+        else:
+            previous = grouped[key]
+            previous.evidence = list(
+                {e.block_id: e for e in previous.evidence + finding.evidence}.values()
+            )
+            if finding.explanation not in previous.explanation:
+                previous.explanation += " " + finding.explanation
     return findings

@@ -21,7 +21,7 @@
 <aside class="panel upload-panel"><h2 class="section-heading"><span class="step">01</span>Документ для проверки</h2>
 <form id="audit"><label class="filebox"><input id="file" type="file" name="file" accept=".docx" required aria-label="Выбрать документ DOCX" aria-describedby="file-help selected"><span class="upload-symbol" aria-hidden="true">↥</span><strong>Выберите DOCX</strong><small id="file-help">Нажмите для выбора · до 10 МиБ</small></label><p class="selected" id="selected">Файл ещё не выбран</p><button class="primary" id="submit" type="submit" disabled><span id="button-text">Проверить документ</span><span aria-hidden="true">↗</span></button></form>
 <p class="side-note"><strong>Для демо — только синтетические документы.</strong><br>Не загружайте реальные и конфиденциальные ТЗ.</p>
-<div class="method"><span class="method-title">ТИП ПРОВЕРКИ</span><p>Числовые противоречия</p><p>Точные размеры и масса. Нормативная проверка, включая 223-ФЗ, не выполняется.</p></div></aside>
+<div class="method"><span class="method-title">ТИП ПРОВЕРКИ</span><p>Противоречия и определённость требований</p><p>Характеристики, сроки, комплектность и условия приёмки. Нормативная проверка, включая 223-ФЗ, не выполняется.</p></div></aside>
 <section class="output" aria-label="Результаты анализа" aria-busy="false" id="output"><div class="output-bar"><h2><span class="step">02</span> Результаты анализа</h2><span class="state-label" id="state" role="status" aria-live="polite">Ожидание документа</span></div>
 <div class="placeholder" id="placeholder"><div class="target" aria-hidden="true">⌖</div><h3 id="placeholder-title">Готов к проверке</h3><p id="placeholder-text">Выберите документ слева. Здесь появятся замечания, исходные фрагменты и рекомендации.</p></div>
 <div id="results" hidden></div>
@@ -33,7 +33,14 @@
 const $ = id => document.getElementById(id);
 const fileInput = $('file'), submit = $('submit'), results = $('results');
 const MAX_UPLOAD = 10 * 1024 * 1024;
-const categories = {numeric_contradiction:'Числовое противоречие'};
+const categories = {
+ numeric_contradiction:'Числовое противоречие', categorical_contradiction:'Несовместимые значения типа',
+ ambiguous_performance_deadline:'Неопределённый срок исполнения',
+ incomplete_bundle_specification:'Недостаточно определённая комплектность',
+ heterogeneous_bundle_review:'Разнородные приборы в одном комплекте',
+ non_verifiable_requirement:'Непроверяемое требование',
+ acceptance_dependency_review:'Зависимость при приёмке'
+};
 const statuses = {confirmed:'Подтверждено', needs_review:'Требует проверки'};
 function node(tag, className, text) { const el = document.createElement(tag); if(className) el.className = className; if(text !== undefined) el.textContent = String(text); return el; }
 function placeholder(title, message, mode='') {
@@ -70,7 +77,7 @@ function render(data) {
   const stats = node('div','stats'), count = node('div');
   count.append(node('strong','count',data.findings.length),node('span','','Замечаний'));
   const state = node('div'); state.append(node('span','','Статус анализа'),node('strong','','Завершён'));
-  const type = node('div'); type.append(node('span','','Тип проверки'),node('strong','','Числовые противоречия'));
+  const type = node('div'); type.append(node('span','','Тип проверки'),node('strong','','Противоречия и определённость требований'));
   stats.append(count,state,type); summary.append(stats); fragment.append(summary);
   if(!data.findings.length) {
     const empty = node('section','empty-result');

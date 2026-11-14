@@ -20,7 +20,9 @@ class Evidence(BaseModel):
 
 
 class Finding(BaseModel):
-    category: Literal["numeric_contradiction"] = "numeric_contradiction"
+    category: Literal["numeric_contradiction", "categorical_contradiction"] = (
+        "numeric_contradiction"
+    )
     status: Literal["confirmed", "needs_review"]
     explanation: str
     evidence: list[Evidence]
@@ -149,4 +151,6 @@ def check_numeric(document: ParsedDocument) -> list[Finding]:
                     recommendation="Уточнить объект и согласовать единое значение характеристики.",
                 )
             )
-    return findings
+    from tz_auditor.checks.lifts import check_lifts
+
+    return findings + check_lifts(document, _rows(document))
